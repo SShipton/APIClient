@@ -10,34 +10,55 @@ namespace APIClient
 {
     class Program
     {
-        class Item
+        class Brewery
         {
             [JsonPropertyName("id")]
             public int id { get; set; }
 
 
-            [JsonPropertyName("title")]
-            public string title { get; set; }
+            [JsonPropertyName("name")]
+            public string name { get; set; }
 
 
-            [JsonPropertyName("description")]
-            public string description { get; set; }
+            [JsonPropertyName("city")]
+            public string city { get; set; }
 
 
-            [JsonPropertyName("director")]
-            public string director { get; set; }
+            [JsonPropertyName("state")]
+            public string state { get; set; }
 
 
-            [JsonPropertyName("producer")]
-            public string producer { get; set; }
+            [JsonPropertyName("country")]
+            public string country { get; set; }
 
 
-            [JsonPropertyName("release_date")]
-            public int release_date { get; set; }
+            [JsonPropertyName("brewery type")]
+            public string brewery_type { get; set; }
 
 
-            [JsonPropertyName("rt_score")]
-            public int rt_score { get; set; }
+            [JsonPropertyName("street")]
+            public string street { get; set; }
+
+            [JsonPropertyName("postal code")]
+            public int postal_code { get; set; }
+
+            [JsonPropertyName("longitude")]
+            public int longitude { get; set; }
+
+            [JsonPropertyName("latitude")]
+            public int latitude { get; set; }
+
+            [JsonPropertyName("phone")]
+            public int phone { get; set; }
+
+            [JsonPropertyName("website url")]
+            public string website_url { get; set; }
+
+            [JsonPropertyName("updated at")]
+            public DateTime updated_at { get; set; }
+
+            [JsonPropertyName("tag list")]
+            public string tag_list { get; set; }
 
             [JsonPropertyName("complete")]
             public bool Complete { get; set; }
@@ -51,35 +72,37 @@ namespace APIClient
             }
         }
 
-        static async Task Main(string[] args)
+        static async Task<string> Main(string[] args)
         {
-            var accessToken = "";
-
-            if (args.Length == 0)
-            {
-                Console.WriteLine("Which list would you like?");
-                accessToken = Console.ReadLine();
-            }
-            else
-            {
-                accessToken = args[0];
-            }
-
             var client = new HttpClient();
 
-            var url = $"https://ghibliapi.herokuapp.com/items?access_token={accessToken}";
-            var responseStream = await client.GetStreamAsync("https://ghibliapi.herokuapp.com");
+            Console.WriteLine("Please enter the ID of the brewery you wish to search for:   ");
 
-            var items = await JsonSerializer.DeserializeAsync<List<Item>>(responseStream);
-
-            var table = new ConsoleTable("Title", "Release Date", "RT Score");
-
-            foreach (var item in items)
+            try
             {
-                table.AddRow(item.title, item.release_date, item.rt_score);
-            }
+                var id = int.Parse(Console.ReadLine());
 
-            table.Write();
+                var url = $"https://api.openbrewerydb.org/breweries/{id}";
+
+                var responseStream = await client.GetStreamAsync(url);
+
+                var brewery = await JsonSerializer.DeserializeAsync<Brewery>(responseStream);
+
+                var table = new ConsoleTable("ID", "Name", "City", "State", "Country");
+
+                table.AddRow(brewery.id, brewery.name, brewery.city, brewery.state, brewery.country);
+                table.Write();
+            }
+            catch (HttpRequestException)
+            {
+                Console.WriteLine("ID not found.");
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("ID not found.");
+            }
+            //break;
         }
     }
 }
+
